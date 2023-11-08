@@ -150,7 +150,7 @@ class Trainer:
             pred_labels = self.discriminator(
                 gen_img
             ).detach()  # don't want to track grads for the discriminator
-            target_labels = torch.fill(pred_labels.shape, 1)
+            target_labels = torch.full(pred_labels.shape, 1)
             adv_loss = self.adv_loss(target_labels, pred_labels)
             content_loss = self.content_loss(batch, gen_img)
             loss = adv_loss + hyperparameters.lam * content_loss
@@ -172,7 +172,7 @@ class Trainer:
         for _ in range(hyperparameters.max_iter):
             for imgs, label in zip([low_imgs, high_imgs, gen_imgs], [1, 1, 0]):
                 pred_labels = self.discriminator(imgs)
-                target_labels = torch.fill(pred_labels.shape, label)
+                target_labels = torch.full(pred_labels.shape, label)
                 loss = self.adv_loss(target_labels, pred_labels)
                 self.optimizers["discriminator"].zero_grad()
                 loss.backward()
