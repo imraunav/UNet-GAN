@@ -95,21 +95,16 @@ class Trainer:
             ),
         }
 
-    def _save_checkpoint(
-        self,
-        epoch: int,
-        d_loss: int,
-        g_loss: int 
-    ):
+    def _save_checkpoint(self, epoch: int, d_loss: int, g_loss: int):
         print(f"Checkpoint reached ar epoch {epoch}!")
-        
+
         if not os.path.exists("./weights"):
             os.mkdir("./weights")
 
         ckp = self.generator.module.state_dict()
         model_path = f"./weights/generator_{epoch}_loss{g_loss:.4f}.pt"
         torch.save(ckp, model_path)
-        
+
         ckp = self.discriminator.module.state_dict()
         model_path = f"./weights/discriminator_{epoch}_loss{d_loss:.4f}.pt"
         torch.save(ckp, model_path)
@@ -201,7 +196,7 @@ class Trainer:
             self.loss_writer(epoch, epoch_loss_d, epoch_loss_g)
             if epoch % hyperparameters.ckpt_per:
                 self._save_checkpoint(epoch, epoch_loss_d, epoch_loss_g)
-        
+
         # Final epoch save
         self._save_checkpoint(max_epoch, epoch_loss_d, epoch_loss_g)
 
@@ -210,6 +205,7 @@ class Trainer:
             file.write(f"Epoch{epoch}: {epoch_loss_d}\n")
         with open("Generator_loss.txt", mode="a") as file:
             file.write(f"Epoch{epoch}: {epoch_loss_g}\n")
+
 
 if __name__ == "__main__":
     world_size = torch.cuda.device_count()
