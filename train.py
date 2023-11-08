@@ -128,7 +128,7 @@ class Trainer:
         gen_imgs = self.generator(
             in_imgs
         ).detach()  # don't want to track grads for this yet
-        batch_loss_d = self._train_discriminator(gen_imgs)
+        batch_loss_d = self._train_discriminator(batch, gen_imgs)
         batch_loss_g = self._train_generator(batch)
         return batch_loss_d, batch_loss_g
 
