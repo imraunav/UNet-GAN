@@ -57,6 +57,7 @@ def main(rank, world_size):
     dataloader, datasampler = get_loader()
     trainer = Trainer(rank, generator, discriminator, dataloader, datasampler)
     trainer.train(hyperparameters.max_epochs)
+    cleanup()
 
 
 class Trainer:
