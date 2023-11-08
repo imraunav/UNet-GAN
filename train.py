@@ -54,7 +54,7 @@ def main(rank, world_size):
     discriminator = UNet(n_channels=1, n_classes=1).to(rank)
     discriminator = DDP(discriminator, device_ids=[rank])
 
-    dataloader, datasampler = get_loader()
+    dataloader, datasampler = get_loader(world_size)
     trainer = Trainer(rank, generator, discriminator, dataloader, datasampler)
     trainer.train(hyperparameters.max_epochs)
     cleanup()
