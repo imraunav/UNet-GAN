@@ -131,7 +131,7 @@ class Trainer:
         batch_loss_d = self._train_discriminator(low_imgs, high_imgs, gen_imgs)
         batch_loss_g = self._train_generator(low_imgs, high_imgs)
         if hyperparameters.debug:
-            if torch.isnan(batch_loss_d):
+            if np.isnan(batch_loss_d):
                 print("Discriminator batch loss is nan!")
                 exit()
             if torch.isnan(batch_loss_g):
