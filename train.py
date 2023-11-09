@@ -134,8 +134,8 @@ class Trainer:
 
     def content_loss(self, batch, gen_imgs):
         low_imgs, high_imgs = batch
-        diff = torch.abs(low_imgs - high_imgs)  # take out similar info from images
-        gamma = torch.pow(low_imgs + high_imgs, 0.5) / (
+        diff = torch.abs(low_imgs - high_imgs, device=self.gpu_id)  # take out similar info from images
+        gamma = torch.pow(low_imgs + high_imgs, 0.5, device=self.gpu_id) / (
             2**0.5
         )  # enhance similar info by a non-linear tranform and normalise
         info_imgs = torch.abs(diff - gamma)  # formulate the info amount
