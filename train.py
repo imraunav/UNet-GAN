@@ -181,6 +181,9 @@ class Trainer:
         for _ in range(hyperparameters.max_iter):
             for imgs, label in zip([low_imgs, high_imgs, gen_imgs], [1, 1, 0]):
                 pred_labels = self.discriminator(imgs).sigmoid()
+                if hyperparameters.debug:
+                    print("Discriminator in range: ", imgs.min().item(), imgs.max().item())
+                    print("Discriminator pred range: ", pred_labels.min().item(), pred_labels.max().item())
                 target_labels = torch.full(
                     pred_labels.shape, label, dtype=torch.float32, device=self.gpu_id
                 )
