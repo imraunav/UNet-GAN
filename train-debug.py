@@ -34,7 +34,7 @@ class CNNClassifier(nn.Module):
         self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
         
         # Fully connected layers
-        self.fc1 = nn.Linear(128 * 11 * 11, 512)  # Assuming input size is 86x86
+        self.fc1 = nn.Linear(12800, 512)  # Assuming input size is 86x86
         self.fc2 = nn.Linear(512, num_classes)
         
         # Activation function
