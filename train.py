@@ -185,7 +185,7 @@ class Trainer:
                     pred_labels.shape, label, dtype=torch.float32, device=self.gpu_id
                 )
                 if hyperparameters.debug:
-                    if torch.isnan(pred_labels):
+                    if torch.any(torch.isnan(pred_labels)):
                         print("Discriminator pred is nan")
                         exit()
                 loss = self.adv_loss(target_labels, pred_labels)
