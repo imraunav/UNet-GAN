@@ -104,7 +104,7 @@ class UNet(nn.Module):
         x = self.d4(x, x1)
         logits = self.d5(x)
 
-        return (F.tanh(logits) + 1) / 2  # [-1, 1] -> [0, 1]
+        return logits
 
 
 # if __name__ == "__main__":
