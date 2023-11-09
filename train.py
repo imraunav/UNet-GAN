@@ -180,6 +180,10 @@ class Trainer:
         # low_imgs, high_imgs = batch
         for _ in range(hyperparameters.max_iter):
             for imgs, label in zip([low_imgs, high_imgs, gen_imgs], [1, 1, 0]):
+                if hyperparameters.debug:
+                    if torch.any(torch.isnan(imgs)):
+                        print("Discriminator input is nan", "; Label ", label)
+                        exit()
                 pred_labels = self.discriminator(imgs)
                 target_labels = torch.full(
                     pred_labels.shape, label, dtype=torch.float32, device=self.gpu_id
