@@ -15,4 +15,4 @@ lam = 20
 max_loss = 1.8
 min_loss = 1.2
 
-debug = False
+debug = True
