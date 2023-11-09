@@ -103,7 +103,7 @@ class Trainer:
         high_imgs = high_imgs.to(self.gpu_id)
         in_imgs = torch.concat([low_imgs, high_imgs], dim=-3)
         with torch.autograd.detect_anomaly(check_nan=True):
-            gen_imgs = self.generator(
+            gen_imgs = self.unet(
                 in_imgs
             ).detach()  # don't want to track grads for this yet
             loss = self.l1_loss(gen_imgs, in_imgs)
