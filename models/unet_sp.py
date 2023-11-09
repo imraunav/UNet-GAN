@@ -3,29 +3,32 @@ from torch import nn
 import torch.nn.functional as F
 from torch.nn.utils import spectral_norm
 
+
 class DoubleConv(nn.Module):
     def __init__(self, in_channels, out_channels, mid_channels=None) -> None:
         super().__init__()
         if mid_channels is None:
             mid_channels = out_channels
         self.conv = nn.Sequential(
-            nn.Conv2d(
-                in_channels,
-                mid_channels,
-                kernel_size=(3, 3),
-                padding="same",
-                bias=False,
+            spectral_norm(
+                nn.Conv2d(
+                    in_channels,
+                    mid_channels,
+                    kernel_size=(3, 3),
+                    padding="same",
+                    bias=False,
+                )
             ),
-            nn.BatchNorm2d(mid_channels),
             nn.LeakyReLU(inplace=True),
-            nn.Conv2d(
-                mid_channels,
-                out_channels,
-                kernel_size=(3, 3),
-                padding="same",
-                bias=False,
+            spectral_norm(
+                nn.Conv2d(
+                    mid_channels,
+                    out_channels,
+                    kernel_size=(3, 3),
+                    padding="same",
+                    bias=False,
+                )
             ),
-            nn.BatchNorm2d(out_channels),
             nn.LeakyReLU(inplace=True),
         )
 
@@ -74,7 +77,7 @@ class OutConv(nn.Module):
         return self.conv(x)
 
 
-class UNet(nn.Module):
+class UNet_SP(nn.Module):
     def __init__(self, n_channels, n_classes) -> None:
         super().__init__()
         self.e1 = DoubleConv(n_channels, 64)
@@ -105,11 +108,3 @@ class UNet(nn.Module):
         logits = self.d5(x)
 
         return (F.tanh(logits) + 1) / 2  # [-1, 1] -> [0, 1]
-
-
-# if __name__ == "__main__":
-#     a = torch.randn(1, 1, 64, 64)
-#     print("a shape : ", a.shape)
-#     unet = UNet(1, 1)
-#     b = unet(a)
-#     print("b shape : ", b.shape)
