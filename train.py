@@ -125,11 +125,13 @@ class Trainer:
         low_imgs = low_imgs.to(self.gpu_id)
         high_imgs = high_imgs.to(self.gpu_id)
         in_imgs = torch.concat([low_imgs, high_imgs], dim=-3)
-        gen_imgs = self.generator(
-            in_imgs
-        ).detach()  # don't want to track grads for this yet
-        batch_loss_d = self._train_discriminator(low_imgs, high_imgs, gen_imgs)
-        batch_loss_g = self._train_generator(low_imgs, high_imgs)
+        with torch.autograd.detect_anomaly(check_nan=True):
+            gen_imgs = self.generator(
+                in_imgs
+            ).detach()  # don't want to track grads for this yet
+            batch_loss_d = self._train_discriminator(low_imgs, high_imgs, gen_imgs)
+            batch_loss_g = self._train_generator(low_imgs, high_imgs)
+
         if hyperparameters.debug:
             if np.isnan(batch_loss_d):
                 print("Discriminator batch loss is nan!")
