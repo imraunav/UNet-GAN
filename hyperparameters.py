@@ -8,7 +8,7 @@ num_workers = 16  # set according to process on node
 
 max_epochs = 100
 ckpt_per = 50
-base_learning_rate = 1e-5
+base_learning_rate = 1e-10
 max_iter = 20
 
 lam = 20
