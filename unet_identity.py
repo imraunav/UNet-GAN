@@ -87,7 +87,6 @@ class Trainer:
             lr=hyperparameters.base_learning_rate,
         )
 
-
     def _on_epoch(self, epoch: int):
         self.datasampler.set_epoch(epoch)
         epoch_loss = []
@@ -103,9 +102,7 @@ class Trainer:
         high_imgs = high_imgs.to(self.gpu_id)
         in_imgs = torch.concat([low_imgs, high_imgs], dim=-3)
         with torch.autograd.detect_anomaly(check_nan=True):
-            gen_imgs = self.unet(
-                in_imgs
-            ).detach()  # don't want to track grads for this yet
+            gen_imgs = self.unet(in_imgs)
             loss = self.l1_loss(gen_imgs, in_imgs)
             self.optimizers.zero_grad()
             loss.backward()
@@ -124,7 +121,7 @@ class Trainer:
 
     def loss_writer(self, epoch, epoch_loss):
         # with open("unetidentity_loss.txt", mode="a") as file:
-            # file.write(f"Epoch{epoch}: {epoch_loss}\n")
+        # file.write(f"Epoch{epoch}: {epoch_loss}\n")
         print((f"Epoch{epoch}: {epoch_loss}"))
 
 
