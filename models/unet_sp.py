@@ -50,8 +50,10 @@ class DownSample(nn.Module):
 class UpSample(nn.Module):
     def __init__(self, in_channels, out_channels) -> None:
         super().__init__()
-        self.up = nn.ConvTranspose2d(
-            in_channels, in_channels // 2, kernel_size=(2, 2), stride=2
+        self.up = spectral_norm(
+            nn.ConvTranspose2d(
+                in_channels, in_channels // 2, kernel_size=(2, 2), stride=2
+            )
         )
         self.conv = DoubleConv(in_channels, out_channels)
 

@@ -51,7 +51,7 @@ def main(rank, world_size):
     print(f"Running training on GPU {rank}")
     ddp_setup(rank, world_size)
 
-    autoencoder = UNet(n_channels=2, n_classes=2).to(rank)
+    autoencoder = UNet(n_channels=1, n_classes=1).to(rank)
     autoencoder = DDP(autoencoder, device_ids=[rank])
 
     dataloader, datasampler = get_loader(world_size)
