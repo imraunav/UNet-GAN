@@ -128,22 +128,22 @@ class Trainer:
         gen_imgs = self.generator(
             in_imgs
         ).detach()  # don't want to track grads for this yet
-        batch_loss_d = self._train_discriminator(batch, gen_imgs)
-        batch_loss_g = self._train_generator(batch)
+        batch_loss_d = self._train_discriminator(low_imgs, high_imgs, gen_imgs)
+        batch_loss_g = self._train_generator(low_imgs, high_imgs)
         return batch_loss_d, batch_loss_g
 
-    def content_loss(self, batch, gen_imgs):
-        low_imgs, high_imgs = batch
-        diff = torch.abs(low_imgs - high_imgs, device=self.gpu_id)  # take out similar info from images
-        gamma = torch.pow(low_imgs + high_imgs, 0.5, device=self.gpu_id) / (
+    def content_loss(self, low_imgs, high_imgs, gen_imgs):
+        # low_imgs, high_imgs = batch
+        diff = torch.abs(low_imgs - high_imgs)  # take out similar info from images
+        gamma = torch.pow(low_imgs + high_imgs, 0.5) / (
             2**0.5
         )  # enhance similar info by a non-linear tranform and normalise
         info_imgs = torch.abs(diff - gamma)  # formulate the info amount
         return self.l1_loss(gen_imgs, info_imgs)
 
-    def _train_generator(self, batch):
+    def _train_generator(self, low_imgs, high_imgs):
         losses = []
-        low_imgs, high_imgs = batch
+        # low_imgs, high_imgs = batch
         in_imgs = torch.concat([low_imgs, high_imgs], dim=-3)
         for _ in range(hyperparameters.max_iter):
             gen_img = self.generator(in_imgs)
@@ -154,7 +154,7 @@ class Trainer:
                 pred_labels.shape, 1, dtype=torch.float32, device=self.gpu_id
             )
             adv_loss = self.adv_loss(target_labels, pred_labels)
-            content_loss = self.content_loss(batch, gen_img)
+            content_loss = self.content_loss(low_imgs, high_imgs, gen_img)
             loss = adv_loss + hyperparameters.lam * content_loss
             self.optimizers["generator"].zero_grad()
             loss.backward()
@@ -168,9 +168,9 @@ class Trainer:
                 break
         return np.mean(losses)
 
-    def _train_discriminator(self, batch, gen_imgs):
+    def _train_discriminator(self, low_imgs, high_imgs, gen_imgs):
         losses = []
-        low_imgs, high_imgs = batch
+        # low_imgs, high_imgs = batch
         for _ in range(hyperparameters.max_iter):
             for imgs, label in zip([low_imgs, high_imgs, gen_imgs], [1, 1, 0]):
                 pred_labels = self.discriminator(imgs)
