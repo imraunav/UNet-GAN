@@ -194,6 +194,8 @@ class Trainer:
                     if torch.any(torch.isnan(pred_labels)):
                         print("Discriminator pred is nan")
                         exit()
+                    else:
+                        print("Discriminator pred is fine")
                 loss = self.adv_loss(target_labels, pred_labels)
                 self.optimizers["discriminator"].zero_grad()
                 loss.backward()
