@@ -6,7 +6,7 @@ bit_depth = 8
 batch_size = 64
 num_workers = 16  # set according to process on node
 
-max_epochs = 100
+max_epochs = 10
 ckpt_per = 50
 base_learning_rate = 1e-5
 max_iter = 20
