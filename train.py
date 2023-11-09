@@ -187,6 +187,10 @@ class Trainer:
                 loss = self.adv_loss(target_labels, pred_labels)
                 self.optimizers["discriminator"].zero_grad()
                 loss.backward()
+                if hyperparameters.debug:
+                    if np.isnan(loss.item()):
+                        print("Discriminator update iter loss is nan")
+                        exit()
                 losses.append(loss.item())
                 self.optimizers["discriminator"].step()
 
