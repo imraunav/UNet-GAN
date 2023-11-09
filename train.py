@@ -191,13 +191,13 @@ class Trainer:
 
                 self.optimizers["discriminator"].zero_grad()
                 loss.backward()
-                # torch.nn.utils.clip_grad_norm_(
-                #     self.discriminator.parameters(),
-                #     max_norm=100,
-                #     norm_type=2.0,
-                #     error_if_nonfinite=False,
-                #     foreach=None,
-                # )
+                torch.nn.utils.clip_grad_norm_(
+                    self.discriminator.parameters(),
+                    max_norm=10,
+                    norm_type=2.0,
+                    error_if_nonfinite=True,
+                    foreach=None,
+                )
 
                 self.optimizers["discriminator"].step()
 
