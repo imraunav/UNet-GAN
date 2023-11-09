@@ -127,9 +127,9 @@ class Trainer:
         high_imgs = high_imgs.to(self.gpu_id)
         in_imgs = torch.concat([low_imgs, high_imgs], dim=-3)
         with torch.autograd.detect_anomaly(check_nan=True):
-            gen_imgs = self.generator(
-                in_imgs
-            ).detach()  # don't want to track grads for this yet
+            gen_imgs = (
+                self.generator(in_imgs).sigmoid().detach()
+            )  # don't want to track grads for this yet
             batch_loss_d = self._train_discriminator(low_imgs, high_imgs, gen_imgs)
             batch_loss_g = self._train_generator(low_imgs, high_imgs)
 
@@ -156,10 +156,10 @@ class Trainer:
         # low_imgs, high_imgs = batch
         in_imgs = torch.concat([low_imgs, high_imgs], dim=-3)
         for _ in range(hyperparameters.max_iter):
-            gen_img = self.generator(in_imgs)
-            pred_labels = self.discriminator(
-                gen_img
-            ).detach()  # don't want to track grads for the discriminator
+            gen_img = self.generator(in_imgs).sigmoid()
+            pred_labels = (
+                self.discriminator(gen_img).sigmoid().detach()
+            )  # don't want to track grads for the discriminator
             target_labels = torch.full(
                 pred_labels.shape, 1, dtype=torch.float32, device=self.gpu_id
             )
@@ -183,7 +183,7 @@ class Trainer:
         # low_imgs, high_imgs = batch
         for _ in range(hyperparameters.max_iter):
             for imgs, label in zip([low_imgs, high_imgs, gen_imgs], [1, 1, 0]):
-                pred_labels = self.discriminator(imgs)
+                pred_labels = self.discriminator(imgs).sigmoid()
                 target_labels = torch.full(
                     pred_labels.shape, label, dtype=torch.float32, device=self.gpu_id
                 )
