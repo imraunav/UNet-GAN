@@ -135,9 +135,9 @@ class Trainer:
     def content_loss(self, batch, gen_imgs):
         low_imgs, high_imgs = batch
         diff = torch.abs(low_imgs - high_imgs)  # take out similar info from images
-        gamma = torch.abs(
-            low_imgs + high_imgs, 0.5
-        )  # enhance similar info by a non-linear tranform
+        gamma = torch.pow(low_imgs + high_imgs, 0.5) / (
+            2**0.5
+        )  # enhance similar info by a non-linear tranform and normalise
         info_imgs = torch.abs(diff - gamma)  # formulate the info amount
         return self.l1_loss(gen_imgs, info_imgs)
 
@@ -150,7 +150,9 @@ class Trainer:
             pred_labels = self.discriminator(
                 gen_img
             ).detach()  # don't want to track grads for the discriminator
-            target_labels = torch.full(pred_labels.shape, 1, dtype=torch.float32, device=self.gpu_id)
+            target_labels = torch.full(
+                pred_labels.shape, 1, dtype=torch.float32, device=self.gpu_id
+            )
             adv_loss = self.adv_loss(target_labels, pred_labels)
             content_loss = self.content_loss(batch, gen_img)
             loss = adv_loss + hyperparameters.lam * content_loss
@@ -172,7 +174,9 @@ class Trainer:
         for _ in range(hyperparameters.max_iter):
             for imgs, label in zip([low_imgs, high_imgs, gen_imgs], [1, 1, 0]):
                 pred_labels = self.discriminator(imgs)
-                target_labels = torch.full(pred_labels.shape, label, dtype=torch.float32, device=self.gpu_id)
+                target_labels = torch.full(
+                    pred_labels.shape, label, dtype=torch.float32, device=self.gpu_id
+                )
                 loss = self.adv_loss(target_labels, pred_labels)
                 self.optimizers["discriminator"].zero_grad()
                 loss.backward()
