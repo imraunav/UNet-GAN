@@ -126,7 +126,7 @@ class Trainer:
         for epoch in range(max_epoch):
             epoch_loss = self._on_epoch(epoch)
             self.loss_writer(epoch, epoch_loss)
-            if epoch % hyperparameters.ckpt_per:
+            if epoch % hyperparameters.ckpt_per == 0:
                 self._save_checkpoint(epoch, epoch_loss)
 
         # Final epoch save
