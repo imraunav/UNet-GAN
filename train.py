@@ -188,10 +188,6 @@ class Trainer:
                     pred_labels.shape, label, dtype=torch.float32, device=self.gpu_id
                 )
                 loss = self.adv_loss(target_labels, pred_labels)
-
-                self.optimizers["discriminator"].zero_grad()
-                loss.backward()
-
                 torch.nn.utils.clip_grad_norm_(
                     self.discriminator.parameters(),
                     max_norm=100,
@@ -199,6 +195,10 @@ class Trainer:
                     error_if_nonfinite=False,
                     foreach=None,
                 )
+
+                self.optimizers["discriminator"].zero_grad()
+                loss.backward()
+
                 self.optimizers["discriminator"].step()
 
                 losses.append(loss.item())
