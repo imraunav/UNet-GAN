@@ -135,13 +135,6 @@ class Trainer:
             batch_loss_d = self._train_discriminator(low_imgs, high_imgs, gen_imgs)
             batch_loss_g = self._train_generator(low_imgs, high_imgs)
 
-        if hyperparameters.debug:
-            if np.isnan(batch_loss_d):
-                print("Discriminator batch loss is nan!")
-                exit()
-            if torch.isnan(batch_loss_g):
-                print("Generator batch loss is nan!")
-                exit()
         return batch_loss_d, batch_loss_g
 
     def content_loss(self, low_imgs, high_imgs, gen_imgs):
@@ -193,13 +186,13 @@ class Trainer:
 
                 self.optimizers["discriminator"].zero_grad()
                 loss.backward()
-                torch.nn.utils.clip_grad_norm_(
-                    self.discriminator.parameters(),
-                    max_norm=10,
-                    norm_type=2.0,
-                    error_if_nonfinite=True,
-                    foreach=None,
-                )
+                # torch.nn.utils.clip_grad_norm_(
+                #     self.discriminator.parameters(),
+                #     max_norm=10,
+                #     norm_type=2.0,
+                #     error_if_nonfinite=True,
+                #     foreach=None,
+                # )
 
                 self.optimizers["discriminator"].step()
 
