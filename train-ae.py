@@ -86,14 +86,14 @@ class Trainer:
             lr=hyperparameters.base_learning_rate,
         )
 
-    def _save_checkpoint(self, epoch: int, d_loss: int, g_loss: int):
+    def _save_checkpoint(self, epoch: int, loss: float,):
         print(f"Checkpoint reached at epoch {epoch}!")
 
         if not os.path.exists("./weights"):
             os.mkdir("./weights")
 
         ckp = self.autoencoder.module.state_dict()
-        model_path = f"./weights/autoencoder_{epoch}_loss{g_loss:.4f}.pt"
+        model_path = f"./weights/autoencoder_{epoch}_loss{loss:.4f}.pt"
         torch.save(ckp, model_path)
 
     def _on_epoch(self, epoch: int):
