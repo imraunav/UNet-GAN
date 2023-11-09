@@ -24,6 +24,33 @@ from utils import XRayDataset
 
 import hyperparameters
 
+class CNNClassifier(nn.Module):
+    def __init__(self, num_classes):
+        super(CNNClassifier, self).__init__()
+        # Convolutional layers
+        self.conv1 = nn.Conv2d(3, 32, kernel_size=3, padding=1)
+        self.conv2 = nn.Conv2d(32, 64, kernel_size=3, padding=1)
+        self.conv3 = nn.Conv2d(64, 128, kernel_size=3, padding=1)
+        self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
+        
+        # Fully connected layers
+        self.fc1 = nn.Linear(128 * 11 * 11, 512)  # Assuming input size is 86x86
+        self.fc2 = nn.Linear(512, num_classes)
+        
+        # Activation function
+        self.relu = nn.ReLU()
+        
+    def forward(self, x):
+        x = self.relu(self.conv1(x))
+        x = self.pool(x)
+        x = self.relu(self.conv2(x))
+        x = self.pool(x)
+        x = self.relu(self.conv3(x))
+        x = self.pool(x)
+        x = x.view(x.size(0), -1)  # Flatten
+        x = self.relu(self.fc1(x))
+        x = self.fc2(x)
+        return x
 
 def ddp_setup(rank, world_size):
     os.environ["MASTER_ADDR"] = "localhost"
@@ -60,7 +87,7 @@ def main(rank, world_size):
     # generator = DDP(generator, device_ids=[rank])
 
     # discriminator = UNet_SP(n_channels=1, n_classes=1).to(rank)
-    discriminator = Discriminator().to(rank)
+    discriminator = CNNClassifier(1).to(rank)
     discriminator = DDP(discriminator, device_ids=[rank])
 
     dataloader, datasampler = get_loader(world_size)
@@ -121,50 +148,33 @@ class Trainer:
         high_imgs = high_imgs.to(self.gpu_id)
         if hyperparameters.debug:
             print("Low energy image range: ", low_imgs.min(), low_imgs.max())
-        low_imgs = torch.full(low_imgs.shape, 1, dtype=torch.float32, device=self.gpu_id)
-        gen_imgs = torch.full(low_imgs.shape, 0, dtype=torch.float32, device=self.gpu_id)
-        batch_loss_d = self._train_discriminator(low_imgs, high_imgs, gen_imgs)
+        batch_loss_d = self._train_discriminator(low_imgs, high_imgs)
         return batch_loss_d
 
-    def _train_discriminator(self, low_imgs, high_imgs, gen_imgs):
+    def _train_discriminator(self, low_imgs, high_imgs):
         losses = []
         # low_imgs, high_imgs = batch
-        for _ in range(hyperparameters.max_iter):
-            for imgs, label in zip([low_imgs, gen_imgs], [1, 0]):
-                pred_labels = self.discriminator(imgs).sigmoid()
-                if hyperparameters.debug:
-                    print(
-                        "Discriminator in range: ", imgs.min().item(), imgs.max().item()
-                    )
-                    print(
-                        "Discriminator pred range: ",
-                        pred_labels.min().item(),
-                        pred_labels.max().item(),
-                    )
-                target_labels = torch.full(
-                    pred_labels.shape, label, dtype=torch.float32, device=self.gpu_id
-                )
-                loss = self.adv_loss(target_labels, pred_labels)
+        for imgs, label in zip([low_imgs, high_imgs], [1, 0]):
+            pred_labels = self.discriminator(imgs).sigmoid()
+            target_labels = torch.full(
+                pred_labels.shape, label, dtype=pred_labels.dtype, device=self.gpu_id
+            )
+            loss = self.adv_loss(target_labels, pred_labels)
 
-                self.optimizer.zero_grad()
-                loss.backward()
-                # torch.nn.utils.clip_grad_norm_(
-                #     self.discriminator.parameters(),
-                #     max_norm=10,
-                #     norm_type=2.0,
-                #     error_if_nonfinite=True,
-                #     foreach=None,
-                # )
+            self.optimizer.zero_grad()
+            loss.backward()
+            # torch.nn.utils.clip_grad_norm_(
+            #     self.discriminator.parameters(),
+            #     max_norm=10,
+            #     norm_type=2.0,
+            #     error_if_nonfinite=True,
+            #     foreach=None,
+            # )
 
-                self.optimizer.step()
+            self.optimizer.step()
 
-                losses.append(loss.item())
+            losses.append(loss.item())
 
-            if (
-                np.mean(losses) <= hyperparameters.min_loss
-                or np.mean(losses) >= hyperparameters.max_loss
-            ):
-                break
         return np.mean(losses)
 
     def train(self, max_epoch):
