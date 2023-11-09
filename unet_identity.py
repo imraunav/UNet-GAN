@@ -123,8 +123,9 @@ class Trainer:
         # self._save_checkpoint(max_epoch, epoch_loss_d, epoch_loss_g)
 
     def loss_writer(self, epoch, epoch_loss):
-        with open("unetidentity_loss.txt", mode="a") as file:
-            file.write(f"Epoch{epoch}: {epoch_loss}\n")
+        # with open("unetidentity_loss.txt", mode="a") as file:
+            # file.write(f"Epoch{epoch}: {epoch_loss}\n")
+        print((f"Epoch{epoch}: {epoch_loss}"))
 
 
 if __name__ == "__main__":
