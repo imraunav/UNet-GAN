@@ -14,7 +14,7 @@ import numpy as np
 from models.unet import UNet
 
 # from models.unet_sp import UNet_SP
-from models.conv_discriminator import Discriminator
+# from models.conv_discriminator import Discriminator
 from utils import XRayDataset
 
 import hyperparameters
@@ -121,8 +121,7 @@ class Trainer:
         return np.mean(losses)
 
     def train(self, max_epoch):
-        self.discriminator.train()
-        self.generator.train()
+        self.autoencoder.train()
 
         for epoch in range(max_epoch):
             epoch_loss = self._on_epoch(epoch)
