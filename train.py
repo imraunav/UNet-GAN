@@ -184,6 +184,8 @@ class Trainer:
                     if torch.any(torch.isnan(imgs)):
                         print("Discriminator input is nan", "; Label ", label)
                         exit()
+                    else:
+                        print("Discriminator input is fine!")
                 pred_labels = self.discriminator(imgs)
                 target_labels = torch.full(
                     pred_labels.shape, label, dtype=torch.float32, device=self.gpu_id
