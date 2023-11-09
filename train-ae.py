@@ -79,6 +79,7 @@ class Trainer:
         self.datasampler = datasampler
 
         self.mse_loss = nn.MSELoss()
+        self.l1_loss = nn.L1Loss()
 
         self.optimizer = ZeroRedundancyOptimizer(
             self.autoencoder.parameters(),
@@ -112,7 +113,7 @@ class Trainer:
         losses = []
         for imgs in [low_imgs, high_imgs]:
             gen_imgs = self.autoencoder(imgs).sigmoid()
-            loss = self.mse_loss(imgs, gen_imgs)
+            loss = self.l1_loss(imgs, gen_imgs)
             self.optimizer.zero_grad()
             loss.backward()
             self.optimizer.step()
