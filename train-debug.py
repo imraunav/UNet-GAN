@@ -147,7 +147,7 @@ class Trainer:
                 )
                 loss = self.adv_loss(target_labels, pred_labels)
 
-                self.optimizers["discriminator"].zero_grad()
+                self.optimizer.zero_grad()
                 loss.backward()
                 # torch.nn.utils.clip_grad_norm_(
                 #     self.discriminator.parameters(),
@@ -157,7 +157,7 @@ class Trainer:
                 #     foreach=None,
                 # )
 
-                self.optimizers["discriminator"].step()
+                self.optimizer.step()
 
                 losses.append(loss.item())
 
