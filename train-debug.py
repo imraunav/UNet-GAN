@@ -122,9 +122,8 @@ class Trainer:
         if hyperparameters.debug:
             print("Low energy image range: ", low_imgs.min(), low_imgs.max())
         in_imgs = torch.concat([low_imgs, high_imgs], dim=-3)
-        with torch.autograd.detect_anomaly(check_nan=True):
-            gen_imgs = torch.rand(low_imgs.shape, device=self.gpu_id)
-            batch_loss_d = self._train_discriminator(low_imgs, high_imgs, gen_imgs)
+        gen_imgs = torch.rand(low_imgs.shape, device=self.gpu_id)
+        batch_loss_d = self._train_discriminator(low_imgs, high_imgs, gen_imgs)
         return batch_loss_d
 
     def _train_discriminator(self, low_imgs, high_imgs, gen_imgs):
