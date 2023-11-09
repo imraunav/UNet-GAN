@@ -17,9 +17,9 @@ import numpy as np
 
 
 from models.unet import UNet
-from models.unet_sp import UNet_SP
+# from models.unet_sp import UNet_SP
 
-# from models.conv_discriminator import Discriminator
+from models.conv_discriminator import Discriminator
 from utils import XRayDataset
 
 import hyperparameters
@@ -59,8 +59,8 @@ def main(rank, world_size):
     # generator = UNet(n_channels=2, n_classes=1).to(rank)
     # generator = DDP(generator, device_ids=[rank])
 
-    discriminator = UNet_SP(n_channels=1, n_classes=1).to(rank)
-    # discriminator = Discriminator().to(rank)
+    # discriminator = UNet_SP(n_channels=1, n_classes=1).to(rank)
+    discriminator = Discriminator().to(rank)
     discriminator = DDP(discriminator, device_ids=[rank])
 
     dataloader, datasampler = get_loader(world_size)
