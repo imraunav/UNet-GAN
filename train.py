@@ -130,6 +130,13 @@ class Trainer:
         ).detach()  # don't want to track grads for this yet
         batch_loss_d = self._train_discriminator(low_imgs, high_imgs, gen_imgs)
         batch_loss_g = self._train_generator(low_imgs, high_imgs)
+        if hyperparameters.debug:
+            if torch.isnan(batch_loss_d):
+                print("Discriminator batch loss is nan!")
+                exit()
+            if torch.isnan(batch_loss_g):
+                print("Generator batch loss is nan!")
+                exit()
         return batch_loss_d, batch_loss_g
 
     def content_loss(self, low_imgs, high_imgs, gen_imgs):
