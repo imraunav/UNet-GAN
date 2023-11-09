@@ -182,31 +182,25 @@ class Trainer:
         # low_imgs, high_imgs = batch
         for _ in range(hyperparameters.max_iter):
             for imgs, label in zip([low_imgs, high_imgs, gen_imgs], [1, 1, 0]):
-                if hyperparameters.debug:
-                    if torch.any(torch.isnan(imgs)):
-                        print("Discriminator input is nan", "; Label ", label)
-                        exit()
-                    else:
-                        print("Discriminator input is fine!")
                 pred_labels = self.discriminator(imgs)
                 target_labels = torch.full(
                     pred_labels.shape, label, dtype=torch.float32, device=self.gpu_id
                 )
-                if hyperparameters.debug:
-                    if torch.any(torch.isnan(pred_labels)):
-                        print("Discriminator pred is nan")
-                        exit()
-                    else:
-                        print("Discriminator pred is fine")
                 loss = self.adv_loss(target_labels, pred_labels)
+
                 self.optimizers["discriminator"].zero_grad()
                 loss.backward()
-                if hyperparameters.debug:
-                    if np.isnan(loss.item()):
-                        print("Discriminator update iter loss is nan")
-                        exit()
-                losses.append(loss.item())
+
+                torch.nn.utils.clip_grad_norm_(
+                    self.discriminator.parameters(),
+                    max_norm=100,
+                    norm_type=2.0,
+                    error_if_nonfinite=False,
+                    foreach=None,
+                )
                 self.optimizers["discriminator"].step()
+
+                losses.append(loss.item())
 
             if (
                 np.mean(losses) <= hyperparameters.min_loss
