@@ -12,8 +12,8 @@ import numpy as np
 
 
 from models.unet import UNet
-# from models.unet_sp import UNet_SP
-from models.conv_discriminator import Discriminator
+from models.unet_sp import UNet_SP
+# from models.conv_discriminator import Discriminator
 from utils import XRayDataset
 
 import hyperparameters
@@ -53,8 +53,8 @@ def main(rank, world_size):
     generator = UNet(n_channels=2, n_classes=1).to(rank)
     generator = DDP(generator, device_ids=[rank])
 
-    # discriminator = UNet_SP(n_channels=1, n_classes=1).to(rank)
-    discriminator = Discriminator().to(rank)
+    discriminator = UNet_SP(n_channels=1, n_classes=1).to(rank)
+    # discriminator = Discriminator().to(rank)
     discriminator = DDP(discriminator, device_ids=[rank])
 
     dataloader, datasampler = get_loader(world_size)
@@ -127,6 +127,8 @@ class Trainer:
         low_imgs, high_imgs = batch
         low_imgs = low_imgs.to(self.gpu_id)
         high_imgs = high_imgs.to(self.gpu_id)
+        if hyperparameters.debug:
+            print("Low energy image range: ", low_imgs.min(), low_imgs.max())
         in_imgs = torch.concat([low_imgs, high_imgs], dim=-3)
         with torch.autograd.detect_anomaly(check_nan=True):
             gen_imgs = (
