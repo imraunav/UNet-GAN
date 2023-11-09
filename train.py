@@ -190,14 +190,14 @@ class Trainer:
                 loss = self.adv_loss(target_labels, pred_labels)
 
                 self.optimizers["discriminator"].zero_grad()
-                torch.nn.utils.clip_grad_norm_(
-                    self.discriminator.parameters(),
-                    max_norm=100,
-                    norm_type=2.0,
-                    error_if_nonfinite=False,
-                    foreach=None,
-                )
                 loss.backward()
+                # torch.nn.utils.clip_grad_norm_(
+                #     self.discriminator.parameters(),
+                #     max_norm=100,
+                #     norm_type=2.0,
+                #     error_if_nonfinite=False,
+                #     foreach=None,
+                # )
 
                 self.optimizers["discriminator"].step()
 
