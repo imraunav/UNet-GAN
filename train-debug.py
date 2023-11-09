@@ -121,7 +121,7 @@ class Trainer:
         high_imgs = high_imgs.to(self.gpu_id)
         if hyperparameters.debug:
             print("Low energy image range: ", low_imgs.min(), low_imgs.max())
-        in_imgs = torch.concat([low_imgs, high_imgs], dim=-3)
+        low_imgs = torch.full(low_imgs.shape, 1, dtype=torch.float32, device=self.gpu_id)
         gen_imgs = torch.full(low_imgs.shape, 0, dtype=torch.float32, device=self.gpu_id)
         batch_loss_d = self._train_discriminator(low_imgs, high_imgs, gen_imgs)
         return batch_loss_d
@@ -130,7 +130,7 @@ class Trainer:
         losses = []
         # low_imgs, high_imgs = batch
         for _ in range(hyperparameters.max_iter):
-            for imgs, label in zip([low_imgs, high_imgs, gen_imgs], [1, 1, 0]):
+            for imgs, label in zip([low_imgs, gen_imgs], [1, 0]):
                 pred_labels = self.discriminator(imgs).sigmoid()
                 if hyperparameters.debug:
                     print(
