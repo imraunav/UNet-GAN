@@ -28,7 +28,7 @@ class Discriminator(nn.Module):
             ),
             nn.ReLU(inplace=True),
             # nn.MaxPool2d(kernel_size=(2, 2), stride=(2, 2)),
-            nn.BatchNorm2d(32),
+            nn.BatchNorm2d(64),
             nn.Conv2d(
                 in_channels=64,
                 out_channels=128,
