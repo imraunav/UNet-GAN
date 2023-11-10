@@ -51,7 +51,7 @@ def main(rank, world_size):
     print(f"Running training on GPU {rank}")
     ddp_setup(rank, world_size)
 
-    autoencoder = UNet(n_channels=1, n_classes=1).to(rank)
+    autoencoder = UNet(n_channels=2, n_classes=2).to(rank)
     autoencoder = DDP(autoencoder, device_ids=[rank])
 
     dataloader, datasampler = get_loader(world_size)
@@ -111,13 +111,14 @@ class Trainer:
         low_imgs = low_imgs.to(self.gpu_id)
         high_imgs = high_imgs.to(self.gpu_id)
         losses = []
-        for imgs in [low_imgs, high_imgs]:
-            gen_imgs = self.autoencoder(imgs).sigmoid()
-            loss = self.mse_loss(imgs, gen_imgs)
-            self.optimizer.zero_grad()
-            loss.backward()
-            self.optimizer.step()
-            losses.append(loss.item())
+        # for imgs in [low_imgs, high_imgs]:
+        imgs = torch.concat([low_imgs, high_imgs])
+        gen_imgs = self.autoencoder(imgs).sigmoid()
+        loss = self.mse_loss(imgs, gen_imgs)
+        self.optimizer.zero_grad()
+        loss.backward()
+        self.optimizer.step()
+        losses.append(loss.item())
 
         return np.mean(losses)
 
@@ -127,11 +128,12 @@ class Trainer:
         for epoch in range(max_epoch):
             epoch_loss = self._on_epoch(epoch)
             self.loss_writer(epoch, epoch_loss)
-            if epoch % hyperparameters.ckpt_per == 0:
+            if epoch % hyperparameters.ckpt_per == 0 and self.gpu_id==0:
                 self._save_checkpoint(epoch, epoch_loss)
 
         # Final epoch save
-        self._save_checkpoint(max_epoch, epoch_loss)
+        if self.gpu_id==0:
+            self._save_checkpoint(max_epoch, epoch_loss)
 
     def loss_writer(self, epoch, epoch_loss):
         print(f"[GPU:{self.gpu_id}] - Epoch:{epoch} - Loss:{epoch_loss}")
