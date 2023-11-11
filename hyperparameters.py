@@ -3,7 +3,7 @@ sample_trial = 50  # keep low to avoid dataloading bottleneck
 sample_threshold = 0.1  # sample patches to have more than this standard deviation
 crop_size = 224
 bit_depth = 16
-batch_size = 64
+batch_size = 16
 num_workers = 16  # set according to process on node
 
 max_epochs = 500
