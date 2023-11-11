@@ -112,7 +112,7 @@ class Trainer:
         high_imgs = high_imgs.to(self.gpu_id)
         losses = []
         # for imgs in [low_imgs, high_imgs]:
-        imgs = torch.concat([low_imgs, high_imgs])
+        imgs = torch.concat([low_imgs, high_imgs], dim=-3)
         gen_imgs = self.autoencoder(imgs).sigmoid()
         loss = self.mse_loss(imgs, gen_imgs)
         self.optimizer.zero_grad()
