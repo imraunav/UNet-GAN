@@ -147,7 +147,7 @@ class Trainer:
         self.optim_dl.step()
 
         self.optim_dl.zero_grad()
-        fake_pred = torch.sigmoid(self.d(fake_batch.detach()))
+        fake_pred = torch.sigmoid(self.d_l(fake_batch.detach()))
         fake_labels = torch.full(
             fake_pred.shape,
             0,
@@ -181,7 +181,7 @@ class Trainer:
         self.optim_dh.step()
 
         self.optim_dh.zero_grad()
-        fake_pred = torch.sigmoid(self.d(fake_batch.detach()))
+        fake_pred = torch.sigmoid(self.d_h(fake_batch.detach()))
         fake_labels = torch.full(
             fake_pred.shape,
             0,
