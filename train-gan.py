@@ -70,7 +70,7 @@ def main(rank, world_size):
 
 
 class Trainer:
-    def __inti__(
+    def __init__(
         self,
         gpu_id,
         g,
