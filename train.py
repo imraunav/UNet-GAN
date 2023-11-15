@@ -13,6 +13,7 @@ import numpy as np
 
 from models.unet import UNet
 from models.unet_sp import UNet_SP
+
 # from models.conv_discriminator import Discriminator
 from utils import XRayDataset
 
@@ -53,12 +54,16 @@ def main(rank, world_size):
     generator = UNet(n_channels=2, n_classes=1).to(rank)
     generator = DDP(generator, device_ids=[rank])
 
-    discriminator = UNet_SP(n_channels=1, n_classes=1).to(rank)
-    # discriminator = Discriminator().to(rank)
-    discriminator = DDP(discriminator, device_ids=[rank])
+    d_l = UNet_SP(n_channels=1, n_classes=1).to(rank)
+    # d_l = Discriminator().to(rank)
+    d_l = DDP(d_l, device_ids=[rank])
+
+    d_h = UNet_SP(n_channels=1, n_classes=1).to(rank)
+    # d_h = Discriminator().to(rank)
+    d_h = DDP(d_h, device_ids=[rank])
 
     dataloader, datasampler = get_loader(world_size)
-    trainer = Trainer(rank, generator, discriminator, dataloader, datasampler)
+    trainer = Trainer(rank, generator, d_l, d_h, dataloader, datasampler)
     trainer.train(hyperparameters.max_epochs)
     cleanup()
 
@@ -68,7 +73,8 @@ class Trainer:
         self,
         gpu_id,
         generator,
-        discriminator,
+        d_l,
+        d_h,
         dataloader,
         datasampler,
     ) -> None:
@@ -79,7 +85,8 @@ class Trainer:
 
         self.gpu_id = gpu_id
         self.generator = generator
-        self.discriminator = discriminator
+        self.d_l = d_l
+        self.d_h = d_h
         self.dataloader = dataloader
         self.datasampler = datasampler
 
@@ -92,14 +99,19 @@ class Trainer:
                 optimizer_class=optim.Adam,
                 lr=hyperparameters.base_learning_rate,
             ),
-            "discriminator": ZeroRedundancyOptimizer(
-                self.discriminator.parameters(),
+            "d_l": ZeroRedundancyOptimizer(
+                self.d_l.parameters(),
+                optimizer_class=optim.Adam,
+                lr=hyperparameters.base_learning_rate,
+            ),
+            "d_h": ZeroRedundancyOptimizer(
+                self.d_h.parameters(),
                 optimizer_class=optim.Adam,
                 lr=hyperparameters.base_learning_rate,
             ),
         }
 
-    def _save_checkpoint(self, epoch: int, d_loss: int, g_loss: int):
+    def _save_checkpoint(self, epoch: int, d_l_loss: int, d_h_loss: int, g_loss: int):
         print(f"Checkpoint reached ar epoch {epoch}!")
 
         if not os.path.exists("./weights"):
@@ -109,19 +121,24 @@ class Trainer:
         model_path = f"./weights/generator_{epoch}_loss{g_loss:.4f}.pt"
         torch.save(ckp, model_path)
 
-        ckp = self.discriminator.module.state_dict()
-        model_path = f"./weights/discriminator_{epoch}_loss{d_loss:.4f}.pt"
+        ckp = self.d_l.module.state_dict()
+        model_path = f"./weights/d_l_{epoch}_loss{d_l_loss:.4f}.pt"
+        torch.save(ckp, model_path)
+
+        ckp = self.d_h.module.state_dict()
+        model_path = f"./weights/d_h_{epoch}_loss{d_h_loss:.4f}.pt"
         torch.save(ckp, model_path)
 
     def _on_epoch(self, epoch: int):
         self.datasampler.set_epoch(epoch)
-        epoch_loss_d, epoch_loss_g = [], []
+        epoch_loss_d_l, epoch_loss_d_h, epoch_loss_g = [], [], []
         for batch in self.dataloader:
-            batch_loss_d, batch_loss_g = self._on_batch(batch)
-            epoch_loss_d.append(batch_loss_d)
+            batch_loss_d_l, batch_loss_d_h, batch_loss_g = self._on_batch(batch)
+            epoch_loss_d_l.append(batch_loss_d_l)
+            epoch_loss_d_h.append(batch_loss_d_h)
             epoch_loss_g.append(batch_loss_g)
 
-        return np.mean(epoch_loss_d), np.mean(epoch_loss_g)
+        return np.mean(epoch_loss_d_l), np.mean(epoch_loss_d_h), np.mean(epoch_loss_g)
 
     def _on_batch(self, batch):
         low_imgs, high_imgs = batch
@@ -131,13 +148,15 @@ class Trainer:
             print("Low energy image range: ", low_imgs.min(), low_imgs.max())
         in_imgs = torch.concat([low_imgs, high_imgs], dim=-3)
         with torch.autograd.detect_anomaly(check_nan=True):
-            gen_imgs = (
-                self.generator(in_imgs).sigmoid().detach()
-            )  # don't want to track grads for this yet
-            batch_loss_d = self._train_discriminator(low_imgs, high_imgs, gen_imgs)
+            gen_imgs = torch.sigmoid(
+                self.generator(in_imgs)
+            ).detach()  # don't want to track grads for this yet
+            batch_loss_d_l = self._train_discriminator_l(low_imgs, high_imgs, gen_imgs)
+            batch_loss_d_h = self._train_discriminator_h(low_imgs, high_imgs, gen_imgs)
+
             batch_loss_g = self._train_generator(low_imgs, high_imgs)
 
-        return batch_loss_d, batch_loss_g
+        return batch_loss_d_l, batch_loss_d_h, batch_loss_g
 
     def content_loss(self, low_imgs, high_imgs, gen_imgs):
         # low_imgs, high_imgs = batch
@@ -180,10 +199,7 @@ class Trainer:
         # low_imgs, high_imgs = batch
         for _ in range(hyperparameters.max_iter):
             for imgs, label in zip([low_imgs, high_imgs, gen_imgs], [1, 1, 0]):
-                pred_labels = self.discriminator(imgs).sigmoid()
-                if hyperparameters.debug:
-                    print("Discriminator in range: ", imgs.min().item(), imgs.max().item())
-                    print("Discriminator pred range: ", pred_labels.min().item(), pred_labels.max().item())
+                pred_labels = torch.sigmoid(self.d_l(imgs))
                 target_labels = torch.full(
                     pred_labels.shape, label, dtype=torch.float32, device=self.gpu_id
                 )

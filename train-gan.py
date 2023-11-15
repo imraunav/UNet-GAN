@@ -257,7 +257,8 @@ class Trainer:
                 break
 
         # update g
-        g_loss = self.update_g(low_imgs, high_imgs)
+        for _ in range(hyperparameters.max_iter):
+            g_loss = self.update_g(low_imgs, high_imgs)
 
         return dl_loss, dh_loss, g_loss
 
