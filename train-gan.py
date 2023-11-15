@@ -217,6 +217,8 @@ class Trainer:
         loss_l.backward()
         self.optim_g.step()
 
+        # generate
+        fake_batch = torch.sigmoid(self.g(imgs))
         # classify
         fake_pred = torch.sigmoid(self.d_h(fake_batch))
         fake_labels = torch.full(
