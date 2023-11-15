@@ -269,9 +269,9 @@ class Trainer:
         dl_losses, dh_losses, g_losses = [], [], []
         for batch in self.dataloader:
             dl_loss, dh_loss, g_loss = self._on_batch(batch)
-            dl_losses.append(dl_loss)
-            dh_losses.append(dh_loss)
-            g_losses.append(g_loss)
+            dl_losses.extend(dl_loss)
+            dh_losses.extend(dh_loss)
+            g_losses.extend(g_loss)
 
         return dl_losses, dh_losses, g_losses
 
