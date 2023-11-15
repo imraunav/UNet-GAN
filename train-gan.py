@@ -110,7 +110,7 @@ class Trainer:
             lr=hyperparameters.base_learning_rate,
         )
 
-    def _save_checkpoint(self, epoch: int, d_l_loss: int, d_h_loss: int, g_loss: int):
+    def _save_checkpoint(self, epoch: int):
         print(f"Checkpoint reached ar epoch {epoch}!")
 
         if not os.path.exists("./weights"):

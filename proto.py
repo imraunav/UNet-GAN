@@ -19,9 +19,9 @@ for l, h in loader:
     plt.subplot(2, 2, 2)
     plt.imshow(h.numpy()[0][0], cmap="grey")
     plt.subplot(2, 2, 3)
-    plt.imshow(torch.abs(diff-gamma).numpy()[0][0], cmap="grey")
-    # plt.subplot(2, 2, 4)
-    # plt.imshow(add.numpy()[0][0], cmap="grey")
+    plt.imshow(diff.numpy()[0][0], cmap="grey")
+    plt.subplot(2, 2, 4)
+    plt.imshow(gamma.numpy()[0][0], cmap="grey")
     plt.show()
     i += 1
     if i > 5:
