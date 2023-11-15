@@ -269,9 +269,9 @@ class Trainer:
         dl_losses, dh_losses, g_losses = [], [], []
         for batch in self.dataloader:
             dl_loss, dh_loss, g_loss = self._on_batch(batch)
-            dl_losses.extend(dl_loss)
-            dh_losses.extend(dh_loss)
-            g_losses.extend(g_loss)
+            dl_losses.append(dl_loss)
+            dh_losses.append(dh_loss)
+            g_losses.append(g_loss)
 
         return dl_losses, dh_losses, g_losses
 
@@ -283,9 +283,9 @@ class Trainer:
         dl_losses, dh_losses, g_losses = [], [], []
         for epoch in range(max_epoch):
             epoch_loss_dl, epoch_loss_dh, epoch_loss_g = self._on_epoch(epoch)
-            dl_losses.append(epoch_loss_dl)
-            dh_losses.append(epoch_loss_dh)
-            g_losses.append(epoch_loss_g)
+            dl_losses.extend(epoch_loss_dl)
+            dh_losses.extend(epoch_loss_dh)
+            g_losses.extend(epoch_loss_g)
             if epoch < 50:
                 print(
                     f"[GPU{self.gpu_id}] Epoch:{epoch} dl_losses:{dl_losses[-1]}, dh_losses:{dh_losses[-1]}, g_losses:{g_losses[-1]}"
