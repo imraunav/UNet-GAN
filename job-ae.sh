@@ -2,7 +2,7 @@
 
 #SBATCH -N 1 
 #SBATCH --ntasks-per-node=16 #number of cores per node
-#SBATCH --time=2-00:00:00 
+#SBATCH --time=1-00:00:00 
 #SBATCH --job-name=UNet-AE  #change name of ur job
 #SBATCH --output=output.ae  #change name of ur output file
 #SBATCH --partition=gpu  #there are various partition. U can change various GPUs
@@ -17,5 +17,6 @@ module load DL-Conda_3.7
 source /home/apps/DL/DL-CondaPy3.7/bin/activate torch
 cd $SLURM_SUBMIT_DIR
 
-CUDA_VISIBLE_DEVICES=0,1 python train-ae.py
+# CUDA_VISIBLE_DEVICES=0,1 python train-ae.py
+CUDA_VISIBLE_DEVICES=0,1 python train-unet-contentloss.py
 # CUDA_VISIBLE_DEVICES=0,1 torchrun --nproc_per_node=2 --nnodes=1 train.py
