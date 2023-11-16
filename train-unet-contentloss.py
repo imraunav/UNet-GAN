@@ -99,7 +99,7 @@ class Trainer:
             os.mkdir("./weights")
 
         ckp = self.autoencoder.module.state_dict()
-        model_path = f"./weights/autoencoderl1_{epoch}_loss{loss:.4f}_alpha{hyperparameters.alpha}_beta{hyperparameters.beta}.pt"
+        model_path = f"./weights/autoencoderl1_{epoch}_alpha{hyperparameters.alpha}_beta{hyperparameters.beta}.pt"
         torch.save(ckp, model_path)
 
     def _on_epoch(self, epoch: int):
@@ -119,9 +119,13 @@ class Trainer:
         # for imgs in [low_imgs, high_imgs]:
         imgs = torch.concat([low_imgs, high_imgs], dim=-3)
         gen_imgs = self.autoencoder(imgs).sigmoid()
-        loss = hyperparameters.alpha * self.l1_crit(
-            low_imgs, gen_imgs
-        ) + hyperparameters.beta * self.l1_crit(high_imgs, gen_imgs)
+        low_loss = self.l1_crit(low_imgs, gen_imgs)
+        high_loss = self.l1_crit(high_imgs, gen_imgs)
+        scale = low_loss + high_loss
+        loss = (
+            hyperparameters.alpha * low_loss / scale
+            + hyperparameters.beta * high_loss / scale
+        )
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
@@ -137,9 +141,7 @@ class Trainer:
             loss.append(epoch_loss)
             self.loss_writer(epoch, loss)
             if epoch < 10:
-                print(
-                    f"[GPU{self.gpu_id}] Epoch:{epoch} loss:{loss[-1]}"
-                )
+                print(f"[GPU{self.gpu_id}] Epoch:{epoch} loss:{loss[-1]}")
             if epoch % hyperparameters.ckpt_per == 0 and self.gpu_id == 0:
                 self._save_checkpoint(epoch, epoch_loss)
 
