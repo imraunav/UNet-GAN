@@ -7,7 +7,7 @@ batch_size = 16
 num_workers = 16  # set according to process on node
 
 max_epochs = 500
-ckpt_per = 50
+ckpt_per = 100
 base_learning_rate = 1e-5
 max_iter = 20
 
@@ -18,5 +18,5 @@ min_loss = 1.2
 debug = True
 
 alpha = 1
-beta = 2
+beta = 1.5
 
