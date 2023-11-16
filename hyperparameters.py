@@ -17,6 +17,6 @@ min_loss = 1.2
 
 debug = True
 
-alpha = 1.5
-beta = 1
+alpha = 1
+beta = 2
 

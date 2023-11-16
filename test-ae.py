@@ -10,17 +10,21 @@ from utils import read_im
 
 in_path = "./test/input"
 # fused_path = "./test/fused-ae-alpha1-beta1"
-fused_path = "./test/fused-ae-alpha1.5-beta1"
+# fused_path = "./test/fused-ae-alpha1.5-beta1"
+fused_path = "./test/fused-ae-alpha1-beta2"
+
 
 # weights = "./weights/generator_500.pt"
-weights = "./weights/autoencoderl1_500_alpha1.5_beta1.pt"
+# weights = "./weights/autoencoderl1_500_alpha1.5_beta1.pt"
+weights = "./weights/autoencoderl1_500_alpha1_beta2.pt"
+
 
 
 
 def main():
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
-    unet21 = UNet(2, 1).eval()
+    unet21 = UNet(2, 1).to(device).eval()
     unet21.load_state_dict(torch.load(weights, map_location=device))
     print("UNet21 weights loaded successfully!")
 
