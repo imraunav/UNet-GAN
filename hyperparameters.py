@@ -16,3 +16,7 @@ max_loss = 1.8
 min_loss = 1.2
 
 debug = True
+
+alpha = 1
+beta = 1
+
