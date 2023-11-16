@@ -11,13 +11,15 @@ from utils import read_im
 in_path = "./test/input"
 # fused_path = "./test/fused-ae-alpha1-beta1"
 # fused_path = "./test/fused-ae-alpha1.5-beta1"
-fused_path = "./test/fused-ae-alpha1-beta2"
+# fused_path = "./test/fused-ae-alpha1-beta2"
+fused_path = "./test/fused-ae-alpha1-beta1.5"
+
 
 
 # weights = "./weights/generator_500.pt"
 # weights = "./weights/autoencoderl1_500_alpha1.5_beta1.pt"
-weights = "./weights/autoencoderl1_500_alpha1_beta2.pt"
-
+# weights = "./weights/autoencoderl1_500_alpha1_beta2.pt"
+weights = "./weights/autoencoderl1_500_alpha1_beta1.5.pt"
 
 
 
@@ -59,8 +61,7 @@ def main():
         print(in_img.shape)
         intensor = torch.tensor(in_img, dtype=torch.float32, device=device)
 
-        fusedtensor = unet21(intensor).sigmoid()
-
+        fusedtensor = unet21(intensor).sigmoid().to(torch.device("cpu"))
 
         fused_im = fusedtensor.detach().numpy()[0, 0, :, :]
 
