@@ -14,6 +14,7 @@ import pickle
 
 from models.unet import UNet
 from models.unet_sp import UNet_SP
+# from models.discriminator import Discriminator
 
 # from models.conv_discriminator import Discriminator
 from utils import XRayDataset
@@ -211,9 +212,12 @@ class Trainer:
             device=self.gpu_id,
             requires_grad=False,
         )
+        # loss_l = self.adv_crit(
+        #     fake_pred, fake_labels
+        # ) + hyperparameters.lam * self.l1_crit(fake_batch, low_imgs)
         loss_l = self.adv_crit(
             fake_pred, fake_labels
-        ) + hyperparameters.lam * self.l1_crit(fake_batch, low_imgs)
+        ) + hyperparameters.alpha * self.l1_crit(fake_batch, low_imgs)
         loss_l.backward()
         self.optim_g.step()
 
@@ -228,9 +232,12 @@ class Trainer:
             device=self.gpu_id,
             requires_grad=False,
         )
+        # loss_h = self.adv_crit(
+        #     fake_pred, fake_labels
+        # ) + hyperparameters.lam * self.l1_crit(fake_batch, high_imgs)
         loss_h = self.adv_crit(
             fake_pred, fake_labels
-        ) + hyperparameters.lam * self.l1_crit(fake_batch, high_imgs)
+        ) + hyperparameters.beta * self.l1_crit(fake_batch, high_imgs)
         loss_h.backward()
         self.optim_g.step()
         return loss_h.item() + loss_l.item()
