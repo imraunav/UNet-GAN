@@ -118,15 +118,15 @@ class Trainer:
             os.mkdir("./weights")
 
         ckp = self.g.module.state_dict()
-        model_path = f"./weights/generator_{epoch}.pt"
+        model_path = f"./weights/generator-2_{epoch}.pt"
         torch.save(ckp, model_path)
 
         ckp = self.d_l.module.state_dict()
-        model_path = f"./weights/d_l_{epoch}.pt"
+        model_path = f"./weights/d_l-2_{epoch}.pt"
         torch.save(ckp, model_path)
 
         ckp = self.d_h.module.state_dict()
-        model_path = f"./weights/d_h_{epoch}.pt"
+        model_path = f"./weights/d_h-2_{epoch}.pt"
         torch.save(ckp, model_path)
 
     def update_dl(self, real_batch, fake_batch):
@@ -298,21 +298,21 @@ class Trainer:
                     f"[GPU{self.gpu_id}] Epoch:{epoch} dl_losses:{dl_losses[-1]}, dh_losses:{dh_losses[-1]}, g_losses:{g_losses[-1]}"
                 )
             if epoch % hyperparameters.ckpt_per == 0 and self.gpu_id == 0:
-                with open("dl_losses.pkl", mode="wb") as file:
+                with open("dl_losses-2.pkl", mode="wb") as file:
                     pickle.dump(dl_losses, file, pickle.HIGHEST_PROTOCOL)
-                with open("dh_losses.pkl", mode="wb") as file:
+                with open("dh_losses-2.pkl", mode="wb") as file:
                     pickle.dump(dh_losses, file, pickle.HIGHEST_PROTOCOL)
-                with open("g_losses.pkl", mode="wb") as file:
+                with open("g_losses-2.pkl", mode="wb") as file:
                     pickle.dump(g_losses, file, pickle.HIGHEST_PROTOCOL)
                 self._save_checkpoint(epoch)
 
         # Final epoch save
         if self.gpu_id == 0:
-            with open("dl_losses.pkl", mode="wb") as file:
+            with open("dl_losses-2.pkl", mode="wb") as file:
                 pickle.dump(dl_losses, file, pickle.HIGHEST_PROTOCOL)
-            with open("dh_losses.pkl", mode="wb") as file:
+            with open("dh_losses-2.pkl", mode="wb") as file:
                 pickle.dump(dh_losses, file, pickle.HIGHEST_PROTOCOL)
-            with open("g_losses.pkl", mode="wb") as file:
+            with open("g_losses-2.pkl", mode="wb") as file:
                 pickle.dump(g_losses, file, pickle.HIGHEST_PROTOCOL)
             self._save_checkpoint(max_epoch)
 
