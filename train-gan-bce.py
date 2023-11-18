@@ -222,7 +222,7 @@ class Trainer:
         # ) + hyperparameters.alpha * self.l1_crit(fake_batch, low_imgs)
         loss_l = self.adv_crit(
             fake_pred, fake_labels
-        ) + hyperparameters.alpha * self.recon_crit_crit(fake_batch, low_imgs)
+        ) + hyperparameters.alpha * self.recon_crit(fake_batch, low_imgs)
         loss_l.backward()
         self.optim_g.step()
 
