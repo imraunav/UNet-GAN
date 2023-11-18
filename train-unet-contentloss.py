@@ -80,7 +80,8 @@ class Trainer:
         self.datasampler = datasampler
 
         self.mse_crit = nn.MSELoss()
-        self.l1_crit = nn.L1Loss()
+        # self.l1_crit = nn.L1Loss()
+        self.recon_crit = nn.BCELoss()
 
         self.optimizer = ZeroRedundancyOptimizer(
             self.autoencoder.parameters(),
@@ -99,7 +100,7 @@ class Trainer:
             os.mkdir("./weights")
 
         ckp = self.autoencoder.module.state_dict()
-        model_path = f"./weights/autoencoderl1_{epoch}_alpha{hyperparameters.alpha}_beta{hyperparameters.beta}.pt"
+        model_path = f"./weights/autoencoderbce_{epoch}_alpha{hyperparameters.alpha}_beta{hyperparameters.beta}.pt"
         torch.save(ckp, model_path)
 
     def _on_epoch(self, epoch: int):
@@ -119,13 +120,11 @@ class Trainer:
         # for imgs in [low_imgs, high_imgs]:
         imgs = torch.concat([low_imgs, high_imgs], dim=-3)
         gen_imgs = self.autoencoder(imgs).sigmoid()
-        low_loss = self.l1_crit(low_imgs, gen_imgs)
-        high_loss = self.l1_crit(high_imgs, gen_imgs)
-        scale = low_loss + high_loss
-        loss = (
-            hyperparameters.alpha * low_loss / scale
-            + hyperparameters.beta * high_loss / scale
-        )
+        # low_loss = self.l1_crit(low_imgs, gen_imgs)
+        # high_loss = self.l1_crit(high_imgs, gen_imgs)
+        low_loss = self.recon_crit(gen_imgs, low_imgs)
+        high_loss = self.recon_crit(gen_imgs, high_imgs)
+        loss = hyperparameters.alpha * low_loss + hyperparameters.beta * high_loss
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
@@ -151,7 +150,7 @@ class Trainer:
 
     def loss_writer(self, epoch, loss):
         # print(f"[GPU:{self.gpu_id}] - Epoch:{epoch} - Loss:{epoch_loss}")
-        with open("ae-l1-loss.pkl", mode="wb") as file:
+        with open("ae-bce-loss.pkl", mode="wb") as file:
             pickle.dump(loss, file, pickle.HIGHEST_PROTOCOL)
 
 
